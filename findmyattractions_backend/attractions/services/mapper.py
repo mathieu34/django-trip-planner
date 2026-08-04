@@ -1,4 +1,5 @@
 from attractions.models import Category
+from decimal import Decimal
 
 def map_attraction(data):
     return {
@@ -11,10 +12,10 @@ def map_attraction(data):
         "address": data.get("address_obj", {}).get("address_string", ""),
         "city": data.get("address_obj", {}).get("city", ""),
         "country": data.get("address_obj", {}).get("country", ""),
-        "latitude": data.get("latitude"),
-        "longitude": data.get("longitude"),
+        "latitude": Decimal(data["latitude"]) if data.get("latitude") else None,
+        "longitude": Decimal(data["longitude"]) if data.get("longitude") else None,
         "price_level": data.get("price_level", ""),
-        "note_tripadvisor": float(data.get("rating", 0)),
+        "note_tripadvisor": float(data.get("rating", 0)) if data.get("rating") else 0,
         "nombre_reviews": int(data.get("num_reviews", 0)),
         "photo_count": int(data.get("photo_count", 0)),
         "horaires": data.get("hours"),
@@ -49,11 +50,11 @@ def get_category(api_data):
 
     # On prend la première sous-catégorie si disponible
     if subcategories:
-        name = subcategories[0].get("name", "Autre")
-    else:
+        name = subcategories[0].get("name", "").strip()
+    if not name:
         name = "Autre"
 
-    obj, created = Category.objects.get_or_create(name=name, defaults={"group": group},)
+    obj, _ = Category.objects.get_or_create(name=name, defaults={"group": group},)
 
     # Si la catégorie existe déjà mais avec un mauvais groupe
     if obj.group != group:
