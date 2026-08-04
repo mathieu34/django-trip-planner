@@ -1,0 +1,1 @@
+# PlanMyAttractions (*Django trip planner*)
