@@ -1,77 +1,27 @@
 @import "tailwindcss";
 
-
 :root {
-
-
     /* Wanderlust palette */
-
-
-    --color-ocean:
-        #0077b6;
-
-
-    --color-sky:
-        #90e0ef;
-
-
-    --color-sunset:
-        #ff7b54;
-
-
-    --color-sand:
-        #f4d6a0;
-
-
-    --color-forest:
-        #2a9d8f;
-
-
-    --color-night:
-        #023047;
-
-
-    --color-cream:
-        #fff8ed;
-
-
+    --color-ocean: #0077b6;
+    --color-sky: #90e0ef;
+    --color-sunset: #ff7b54;
+    --color-sand: #f4d6a0;
+    --color-forest: #2a9d8f;
+    --color-night: #023047;
+    --color-cream: #fff8ed;
 
     /* semantic */
-
-
-    --color-primary:
-        #0077b6;
-
-
-    --color-primary-dark:
-        #023047;
-
-
-    --color-accent:
-        #ff7b54;
-
-
+    --color-primary: #0077b6;
+    --color-primary-dark: #023047;
+    --color-accent: #ff7b54;
 }
-
-
 
 html {
-
     scroll-behavior: smooth;
-
 }
 
-
 body {
-
-    background:
-        var(--color-cream);
-
-    color:
-        var(--color-night);
-
-    font-family:
-        Inter,
-        sans-serif;
-
+    background: var(--color-cream);
+    color: var(--color-night);
+    font-family: Inter, sans-serif;
 }

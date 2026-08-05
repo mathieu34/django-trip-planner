@@ -1,129 +1,143 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import ReactCountryFlag from "react-country-flag";
+import { createProfile, getProfile, getProfiles, getCountries } from "../services/userService";
+import { getCsrfToken } from "../api/crsf";
 
 export default function Landing() {
-    const profiles = [
-        ["🏠", "Local"],
-        ["🎒", "Touriste"],
-        ["💼", "Professionnel"],
-    ];
+    useEffect(() => {
+        getCsrfToken();
+    }, []);
 
-    const countries = [
-        { value: "France", label: "France", code: "FR" },
-        { value: "Italy", label: "Italie", code: "IT" },
-        { value: "Spain", label: "Espagne", code: "ES" },
-        { value: "Germany", label: "Allemagne", code: "DE" },
-        { value: "Japan", label: "Japon", code: "JP" },
-        { value: "United States", label: "États-Unis", code: "US" },
-    ];
+    const navigate = useNavigate();
+    const [selectedProfile, setSelectedProfile] = useState(null);
+    const [selectedCountry, setSelectedCountry] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [profiles, setProfiles] = useState([]);
+    const [loadingProfile, setLoadingProfile] = useState(true);
+    const [countries, setCountries] = useState([]);
+
+    const handleStart = async () => {
+        setError("");
+        if (!selectedProfile || !selectedCountry) {
+            setError("Veuillez sélectionner un profil et un pays.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            await createProfile({
+                profile_type: selectedProfile,
+                country: selectedCountry.value,
+            });
+            navigate("/home");
+        }
+        catch (err) {
+            console.error(err);
+            setError("Impossible de créer la session.");
+        }
+        finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        async function loadProfile() {
+            try {
+                const response = await getProfile();
+                console.log("Profil trouvé :", response.data);
+                navigate("/home");
+
+            }
+            catch (error) {
+                if (error.response?.status === 404) {
+
+                    console.error("Erreur profil :");
+                    return;
+                }
+                console.log(error)
+            }
+            finally {
+                console.log("Fin vérification session");
+                setLoadingProfile(false);
+            }
+        };
+        loadProfile();
+    }, []);
+
+    useEffect(() => {
+        getProfiles().then((res) => {
+            setProfiles(res.data);
+        });
+    }, []);
+
+    useEffect(() => {
+        getCountries()
+            .then(response => {
+                setCountries(response.data);
+            });
+    }, []);
+
+    if (loadingProfile) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-wanderlust-cream">
+                <p className="text-xl text-wanderlust-night">
+                    Vérification de votre session...
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="relative min-h-screen overflow-hidden flex items-center justify-center px-6 py-16">
             <div className="absolute inset-0 bg-hero-gradient" />
             <div className="absolute inset-0 bg-black/20" />
-            <div
-                className="
-                    relative
-                    z-10
-                    w-full
-                    max-w-6xl
-                    rounded-[32px]
-                    bg-white/90
-                    backdrop-blur-xl
-                    shadow-2xl
-                    border
-                    border-white/50
-                    overflow-hidden
-                "
+            <div className="relative z-10 w-full max-w-6xl rounded-[32px] bg-white/90 backdrop-blur-xl shadow-2xl 
+            border border-white/50 overflow-hidden"
             >
-
                 <div className="text-center px-10 pt-12">
-                    <h1 className="
-                        mt-6
-                        text-5xl
-                        md:text-6xl
-                        font-display
-                        font-bold
-                        text-wanderlust-night
-                    ">
+                    <h1 className="mt-6 text-5xl md:text-6xl font-display font-bold text-wanderlust-night">
                         Préparez votre prochaine aventure
                     </h1>
-
-                    <p className="
-                        mt-5
-                        max-w-2xl
-                        mx-auto
-                        text-lg
-                        leading-relaxed
-                        text-slate-600
-                    ">
+                    <p className="mt-5 max-w-2xl mx-auto text-lg leading-relaxed text-slate-600">
                         Découvrez les meilleures attractions,
                         restaurants et hôtels grâce aux données
                         TripAdvisor et créez votre itinéraire idéal.
                     </p>
-
                 </div>
 
                 <div className="grid lg:grid-cols-2 gap-14 px-12 py-14">
                     <div>
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="
-                                w-10 h-10
-                                rounded-full
-                                bg-primary
-                                flex items-center justify-center
-                                font-bold
-                            ">
+                            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center font-bold">
                                 1
                             </div>
-
                             <h2 className="text-2xl font-semibold">
                                 Choisissez votre profil
                             </h2>
-
                         </div>
 
                         <div className="space-y-3">
-                            {profiles.map(([icon, name]) => (
+                            {profiles.map((profile) => (
                                 <button
-                                    key={name}
-                                    className="
-                                        group
-                                        w-full
-                                        flex
-                                        items-center
-                                        gap-6
-                                        rounded-2xl
-                                        border
-                                        border-slate-200
-                                        bg-white
-                                        hover:border-primary
-                                        hover:shadow-lg
-                                        transition-all
-                                    "
+                                    key={profile.value}
+                                    onClick={() => setSelectedProfile(profile.value)}
+                                    className={`group w-full flex items-center gap-6 rounded-2xl bg-white transition-all border
+                                        ${selectedProfile === profile.value
+                                            ? "border-primary ring-2 ring-primary/20 shadow-lg"
+                                            : "border-slate-200 hover:border-primary"
+                                        }`}
                                 >
-                                    <div className="
-                                        w-16
-                                        h-16
-                                        rounded-full
-                                        bg-wanderlust-sky/20
-                                        flex
-                                        items-center
-                                        justify-center
-                                        text-3xl
-                                        group-hover:scale-110
-                                        transition
-                                    ">
-                                        {icon}
+                                    <div className="w-16 h-16 rounded-full bg-wanderlust-sky/20 flex items-center justify-center
+                                     text-3xl group-hover:scale-110 transition">
+                                        {profile.icon}
                                     </div>
 
                                     <div className="text-left">
-                                        <h3 className="
-                                            text-xl
-                                            font-semibold
-                                            text-wanderlust-night
-                                        ">
-                                            {name}
+                                        <h3 className="text-xl font-semibold text-wanderlust-night">
+                                            {profile.label}
                                         </h3>
                                     </div>
                                 </button>
@@ -133,16 +147,7 @@ export default function Landing() {
 
                     <div className="flex flex-col">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="
-                                w-10
-                                h-10
-                                rounded-full
-                                bg-primary
-                                flex
-                                items-center
-                                justify-center
-                                font-bold
-                            ">
+                            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center font-bold">
                                 2
                             </div>
                             <h2 className="text-2xl font-semibold">
@@ -157,6 +162,8 @@ export default function Landing() {
 
                         <Select
                             options={countries}
+                            value={selectedCountry}
+                            onChange={setSelectedCountry}
                             placeholder="Sélectionner un pays..."
                             formatOptionLabel={(country) => (
                                 <div className="flex items-center gap-3">
@@ -185,22 +192,22 @@ export default function Landing() {
 
                         <div className="flex-1" />
                         <button
-                            className="
-                                mt-10
-                                w-full
-                                py-4
-                                rounded-2xl
-                                bg-primary
-                                text-lg
-                                font-semibold
-                                shadow-xl
-                                hover:bg-primary-dark
-                                hover:-translate-y-1
-                                transition-all
-                            "
+                            onClick={handleStart}
+                            disabled={loading || !selectedProfile || !selectedCountry}
+                            className={`mt-10 w-full py-4 rounded-2xl text-lg font-semibold shadow-xl transition-all 
+                                ${loading || !selectedProfile || !selectedCountry
+                                    ? "bg-slate-300 cursor-not-allowed"
+                                    : "bg-primary hover:bg-primary-dark hover:-translate-y-1"
+                                }`}
                         >
-                            Commencer l'exploration →
+                            {loading ? "Création..." : "Commencer l'exploration →"}
                         </button>
+                        {error && (
+                            <p className="mt-4 text-red-600 text-sm text-center">
+                                {error}
+                            </p>
+                        )
+                        }
                     </div>
                 </div>
             </div>
