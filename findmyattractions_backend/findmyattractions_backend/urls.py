@@ -22,3 +22,4 @@ urlpatterns = [
     path("api/attractions/", include("attractions.urls")),
     path("api/users/", include("users.urls"))
 ]
+

@@ -1,7 +1,9 @@
 from django.urls import path
-from .views import AttractionDetailAPIView, SyncAttractionAPIView
+from . import views
 
 urlpatterns = [
-    path("<int:pk>/",AttractionDetailAPIView.as_view(), name="attraction_detail"),
-    path("sync/<str:location_id>/", SyncAttractionAPIView.as_view(), name="attraction_sync"),
+    path('attractions/', views.attraction_list, name='attraction-list'),
+    path('attractions/<int:pk>/', views.attraction_detail, name='attraction-detail'),
 ]
+
+

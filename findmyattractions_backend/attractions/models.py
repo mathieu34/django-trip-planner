@@ -26,12 +26,10 @@ class Attraction(models.Model):
         Category, on_delete=models.SET_NULL, null=True, related_name='attractions'
     )
 
-    # coordonnées de contact
     phone = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
     website = models.URLField(blank=True)
 
-    # informations géographiques
     address = models.CharField(max_length=255, blank=True)
     city = models.CharField(max_length=100, blank=True)
     country = models.CharField(max_length=100, blank=True)
@@ -43,10 +41,7 @@ class Attraction(models.Model):
     horaires = models.JSONField(blank=True, null=True)
     timezone = models.CharField(max_length=50, blank=True)
 
-    # champs conditionnels selon category.group
-    cuisine = models.JSONField(blank=True, null=True)    # si restaurant
-    styles = models.JSONField(blank=True, null=True)     # si hotel
-    groupes = models.JSONField(blank=True, null=True)    # si attraction
+    groupes = models.JSONField(blank=True, null=True)
 
     note_tripadvisor = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     nombre_reviews = models.IntegerField(default=0)
