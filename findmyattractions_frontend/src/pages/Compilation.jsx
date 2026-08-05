@@ -1,4 +1,17 @@
+import { Navigate } from "react-router-dom";
+import { useUser } from "../context/UserContext";
+
 export default function Compilation() {
+    const { user, userLoading } = useUser();
+
+    if (userLoading) {
+        return <p>Chargement...</p>;
+    }
+
+    if (!user) {
+        return <Navigate to="/" replace />;
+    }
+
     return (
         <div className="
 pt-32

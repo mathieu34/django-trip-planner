@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import ReactCountryFlag from "react-country-flag";
-import { createProfile, getProfile, getProfiles, getCountries } from "../services/userService";
+import { getProfiles, getCountries } from "../services/userService";
 import { getCsrfToken } from "../api/crsf";
+import { useUser } from "../context/UserContext";
 
 export default function Landing() {
+    const { user, login, userLoading } = useUser();
+
     useEffect(() => {
         getCsrfToken();
     }, []);
@@ -13,10 +16,8 @@ export default function Landing() {
     const navigate = useNavigate();
     const [selectedProfile, setSelectedProfile] = useState(null);
     const [selectedCountry, setSelectedCountry] = useState(null);
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [profiles, setProfiles] = useState([]);
-    const [loadingProfile, setLoadingProfile] = useState(true);
     const [countries, setCountries] = useState([]);
 
     const handleStart = async () => {
@@ -27,8 +28,7 @@ export default function Landing() {
         }
 
         try {
-            setLoading(true);
-            await createProfile({
+            await login({
                 profile_type: selectedProfile,
                 country: selectedCountry.value,
             });
@@ -38,34 +38,7 @@ export default function Landing() {
             console.error(err);
             setError("Impossible de créer la session.");
         }
-        finally {
-            setLoading(false);
-        }
     };
-
-    useEffect(() => {
-        async function loadProfile() {
-            try {
-                const response = await getProfile();
-                console.log("Profil trouvé :", response.data);
-                navigate("/home");
-
-            }
-            catch (error) {
-                if (error.response?.status === 404) {
-
-                    console.error("Erreur profil :");
-                    return;
-                }
-                console.log(error)
-            }
-            finally {
-                console.log("Fin vérification session");
-                setLoadingProfile(false);
-            }
-        };
-        loadProfile();
-    }, []);
 
     useEffect(() => {
         getProfiles().then((res) => {
@@ -80,12 +53,16 @@ export default function Landing() {
             });
     }, []);
 
-    if (loadingProfile) {
+    useEffect(() => {
+        if (!userLoading && user) {
+            navigate("/home");
+        }
+    }, [user, userLoading]);
+
+    if (userLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-wanderlust-cream">
-                <p className="text-xl text-wanderlust-night">
-                    Vérification de votre session...
-                </p>
+            <div className="min-h-screen flex items-center justify-center">
+                Vérification de la session...
             </div>
         );
     }
@@ -193,14 +170,14 @@ export default function Landing() {
                         <div className="flex-1" />
                         <button
                             onClick={handleStart}
-                            disabled={loading || !selectedProfile || !selectedCountry}
+                            disabled={userLoading || !selectedProfile || !selectedCountry}
                             className={`mt-10 w-full py-4 rounded-2xl text-lg font-semibold shadow-xl transition-all 
-                                ${loading || !selectedProfile || !selectedCountry
+                                ${userLoading || !selectedProfile || !selectedCountry
                                     ? "bg-slate-300 cursor-not-allowed"
                                     : "bg-primary hover:bg-primary-dark hover:-translate-y-1"
                                 }`}
                         >
-                            {loading ? "Création..." : "Commencer l'exploration →"}
+                            {userLoading ? "Création..." : "Commencer l'exploration →"}
                         </button>
                         {error && (
                             <p className="mt-4 text-red-600 text-sm text-center">

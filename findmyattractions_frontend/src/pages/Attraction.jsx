@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api/api";
+import { Navigate } from "react-router-dom";
+import { useUser } from "../context/UserContext";
 
 export default function Attraction() {
+    const { user, userLoading } = useUser();
     const { id } = useParams()
     const [attraction, setAttraction] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -19,7 +22,7 @@ export default function Attraction() {
             .finally(() => setLoading(false))
     }, [id]);
 
-    if (loading) return <p className="pt-24 text-center">Chargement...</p>;
+    if (loading || userLoading) return <p className="pt-24 text-center">Chargement...</p>;
     if (error || !attraction) return <p className="pt-24 text-center">Attraction introuvable.</p>;
 
     const horaires = Array.isArray(attraction.horaires?.weekday_text)
@@ -43,6 +46,10 @@ export default function Attraction() {
     // 4. a?.b                   -> lit a.b sans planter si "a" est null/undefined
     // 5. a ?? b                 -> utilise "a", sinon "b" si "a" est null/undefined
     // 6. variables calculées avant le return -> garde le JSX simple à lire
+
+    if (!user) {
+        return <Navigate to="/" replace />;
+    }
 
     return (
         <div className="pt-24">
