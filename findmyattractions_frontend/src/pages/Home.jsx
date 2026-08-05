@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
 import AttractionCard from "../components/AttractionCard";
+import { Navigate } from "react-router-dom";
+import { useUser } from "../context/UserContext";
 
 export default function Home() {
 
+    const { user, userLoading } = useUser();
     const [attractions, setAttractions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -17,6 +20,10 @@ export default function Home() {
             .finally(() => setLoading(false));
     }, []);
 
+    if (!user) {
+        return <Navigate to="/" replace />;
+    }
+
     return (
 
         <main className="pt-32 px-10">
@@ -25,10 +32,10 @@ export default function Home() {
                 🌍 Destinations populaires
             </h1>
 
-            {loading && <p className="mt-8">Chargement...</p>}
+            {(loading || userLoading) && <p className="mt-8">Chargement...</p>}
             {error && <p className="mt-8 text-gray-500">Impossible de charger les attractions.</p>}
 
-            {!loading && !error && (
+            {(!loading || !userLoading) && !error && (
                 // Carrousel : rangée scrollable horizontalement, cf. discussion overflow-x-auto/snap
                 <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory pb-4 mt-8">
                     {attractions.map((attraction) => (
