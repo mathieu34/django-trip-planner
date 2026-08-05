@@ -12,4 +12,4 @@ class UserProfile(models.Model):
     country = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.session_key
+        return f"{self.profile_type} - {self.country}"
