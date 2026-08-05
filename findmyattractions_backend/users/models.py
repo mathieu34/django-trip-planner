@@ -3,7 +3,7 @@ from django.db import models
 class ProfileType(models.TextChoices):
     LOCAL = 'Local'
     TOURISTE = 'Touriste'
-    PRO = 'Professionnel'
+    PROFESSIONNEL = 'Professionnel'
 
 # Create your models here.
 class UserProfile(models.Model):
