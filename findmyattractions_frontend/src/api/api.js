@@ -1,6 +1,20 @@
 import axios from "axios";
 
-export default axios.create({
+const api = axios.create({
     baseURL: "http://localhost:8000/api",
     withCredentials: true,
 });
+
+api.interceptors.request.use(config => {
+    const csrfToken = document.cookie
+        .split("; ")
+        .find(row => row.startsWith("csrftoken="))
+        ?.split("=")[1];
+
+    if (csrfToken) {
+        config.headers["X-CSRFToken"] = csrfToken;
+    }
+    return config;
+});
+
+export default api;

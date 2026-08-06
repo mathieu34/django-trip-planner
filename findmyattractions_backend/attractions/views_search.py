@@ -8,5 +8,5 @@ class SearchView(APIView):
     def get(self, request):
         attractions = get_all_attractions()
         results = apply_filters(attractions, request.query_params)
-        results = sorted(results, key=lambda a: a["likes"], reverse=True)
+        results = sorted(results, key=lambda a: a["likes"] or 0, reverse=True)
         return Response({"results": results, "count": len(results)})

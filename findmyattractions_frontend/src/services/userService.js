@@ -11,3 +11,11 @@ export function getProfile() {
 export function logout() {
     return api.post("/users/logout/");
 }
+
+export function getProfiles() {
+    return api.get("/users/profiles/");
+}
+
+export function getCountries() {
+    return api.get("/users/countries/");
+}

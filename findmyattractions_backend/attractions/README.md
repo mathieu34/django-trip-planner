@@ -41,6 +41,19 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
+Importer des attractions depuis l'API TripAdvisor :
+```
+# Une ville / catégorie précise
+python manage.py import_attractions --query "Paris" --category attractions --limit 10
+# --category : attractions (défaut) / hotels / restaurants
+# --geo : ville pour restreindre la recherche (sinon utilise --query)
+# --limit : nombre de lieux à importer (max 20)
+
+# Plusieurs villes et catégories d'un coup (Paris, Lyon, Marseille, Rome, Barcelone, Londres x 3 catégories)
+python manage.py import_batch --limit 10
+```
+Nécessite une clé API valide dans `.env` (`TRIPADVISOR_API_KEY`), voir `.env.example`.
+
 ## Champs API TripAdvisor -> modèle
 
 On utilise la **Terra API** (moderne, `https://terra.tripadvisor.com/api`, auth via header `X-API-Key`), pas l'ancienne Content API (`api.content.tripadvisor.com`). Import via `python manage.py import_attractions --query "Paris" --category attractions`, voir `attractions/management/commands/import_attractions.py`.

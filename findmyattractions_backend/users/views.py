@@ -1,9 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from .models import UserProfile
-from .serializers import UserProfileSerializer
 from compilation.models import CompilationItem
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.http import JsonResponse
+from .data.countries import COUNTRIES
+from .models import UserProfile, ProfileType
+from .serializers import UserProfileSerializer
 
 # Create your views here.
 
@@ -26,13 +28,13 @@ class CurrentProfileAPIView(APIView):
         session_key = request.session.session_key
 
         if not session_key:
-            return Response({"detail": "Aucune session"},status=404)
+            return Response({"detail": "Aucune session"})
 
         try:
             profile = UserProfile.objects.get(session_key=session_key)
 
         except UserProfile.DoesNotExist:
-            return Response({"detail": "Profil introuvable"},status=404)
+            return Response({"detail": "Profil introuvable"})
 
         serializer = UserProfileSerializer(profile)
 
@@ -49,3 +51,27 @@ class LogoutAPIView(APIView):
         request.session.flush()
 
         return Response({"message": "Déconnecté"})
+
+class ProfileChoicesAPIView(APIView):
+    def get(self, request):
+        data = []
+        icons = {
+            "Local": "🏠",
+            "Touriste": "🎒",
+            "Professionnel": "💼",
+        }
+        for value, label in ProfileType.choices:
+            data.append({
+                "value": value,
+                "label": label,
+                "icon": icons.get(value, "🌍"),
+            })
+        return Response(data)
+
+class CountryListAPIView(APIView):
+    def get(self, request):
+        return Response(COUNTRIES)
+
+@ensure_csrf_cookie
+def csrf(request):
+    return JsonResponse({"detail": "CSRF cookie set"})
