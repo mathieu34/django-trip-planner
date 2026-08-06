@@ -77,7 +77,7 @@ export default function Landing() {
                         Préparez votre prochaine aventure
                     </h1>
                     <p className="mt-5 max-w-2xl mx-auto text-lg leading-relaxed text-slate-600">
-                        Découvrez les meilleures attractions, restaurants et hôtels grâce aux données TripAdvisor 
+                        Découvrez les meilleurs attractions, restaurants et hôtels grâce aux données TripAdvisor 
                         et créez votre itinéraire idéal.
                     </p>
                 </div>
