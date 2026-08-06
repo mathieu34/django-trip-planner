@@ -1,5 +1,22 @@
 # PlanMyAttractions (*Django trip planner*)
 
+PlanMyAttractions est une application développée avec **Django REST Framework** et **React** permettant de découvrir des attractions touristiques à partir de l'API **TripAdvisor**.
+
+L'utilisateur choisit un **profil** (Local, Touriste ou Professionnel) ainsi qu'un **pays**, puis peut explorer des attractions, effectuer des recherches et créer une compilation personnalisée de son voyage.
+
+## Architecture
+
+Le projet est composé de deux parties :
+
+```
+backend/
+    users/
+    attractions/
+    compilation/
+
+frontend/
+```
+
 ## Lancer l'application
 
 **Environnement Python**
@@ -17,6 +34,8 @@ python manage.py migrate
 python manage.py import_batch --limit 4   # à faire une fois, pour peupler la base
 python manage.py runserver
 ```
+
+Ouvre `http://localhost:8000/admin` pour accéder à l'espace administration du serveur Django.
 
 Nécessite un `.env` complet (voir `.env.example`) : `TRIPADVISOR_API_KEY`, `SECRET_KEY`, `BASE_URL_TRIPADVISOR_API`.
 
