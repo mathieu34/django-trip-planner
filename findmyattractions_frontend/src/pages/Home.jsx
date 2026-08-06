@@ -1,28 +1,21 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
 import AttractionCard from "../components/AttractionCard";
-import { Navigate } from "react-router-dom";
-import { useUser } from "../context/UserContext";
 
 export default function Home() {
 
-    const { user, userLoading } = useUser();
-    const [attractions, setAttractions] = useState([]);
+    const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     // useState + useEffect : le fetch doit partir seul au montage, cf. Attraction.jsx
     useEffect(() => {
         api.get('/attractions/')
-            // res.data = le JSON renvoyé par Django ({"attractions": [...]}, cf. attraction_list dans views.py)
-            .then((res) => setAttractions(res.data.attractions))
+            // res.data = le JSON renvoyé par Django ({"sections": [{key, label, attractions}, ...]}, cf. attraction_list dans views.py)
+            .then((res) => setSections(res.data.sections || []))
             .catch((err) => setError(err))
             .finally(() => setLoading(false));
     }, []);
-
-    if (!user) {
-        return <Navigate to="/" replace />;
-    }
 
     return (
 
@@ -32,19 +25,23 @@ export default function Home() {
                 🌍 Destinations populaires
             </h1>
 
-            {(loading || userLoading) && <p className="mt-8">Chargement...</p>}
+            {loading && <p className="mt-8">Chargement...</p>}
             {error && <p className="mt-8 text-gray-500">Impossible de charger les attractions.</p>}
 
-            {(!loading || !userLoading) && !error && (
-                // Carrousel : rangée scrollable horizontalement, cf. discussion overflow-x-auto/snap
-                <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory pb-4 mt-8">
-                    {attractions.map((attraction) => (
-                        <div key={attraction.id} className="snap-start shrink-0 w-72">
-                            <AttractionCard attraction={attraction} />
-                        </div>
-                    ))}
-                </div>
-            )}
+            {!loading && !error && sections.map((section) => (
+                <section key={section.key} className="mt-10">
+                    <h2 className="text-2xl font-semibold mb-4">{section.label}</h2>
+
+                    {/* Carrousel : rangée scrollable horizontalement, cf. discussion overflow-x-auto/snap */}
+                    <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory pb-4">
+                        {section.attractions.map((attraction) => (
+                            <div key={attraction.id} className="snap-start shrink-0 w-72">
+                                <AttractionCard attraction={attraction} />
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            ))}
 
             {/*
                 TODO - BLOQUÉ pour l'instant :

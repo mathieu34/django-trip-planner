@@ -69,9 +69,7 @@ export default function Landing() {
 
     return (
         <div className="relative min-h-screen overflow-hidden flex items-center justify-center px-6 py-16">
-            <div className="absolute inset-0 bg-hero-gradient" />
-            <div className="absolute inset-0 bg-black/20" />
-            <div className="relative z-10 w-full max-w-6xl rounded-[32px] bg-white/90 backdrop-blur-xl shadow-2xl 
+            <div className="relative z-10 w-full max-w-6xl rounded-[32px] bg-white/60 backdrop-blur-xl shadow-2xl 
             border border-white/50 overflow-hidden"
             >
                 <div className="text-center px-10 pt-12">
