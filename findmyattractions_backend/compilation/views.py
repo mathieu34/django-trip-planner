@@ -45,21 +45,26 @@ def shortest_route(attractions):
     return list(best_order)
 
 
+PRICE_LEVEL_MAP = {
+    "Cheap Eats": 1,
+    "Mid-range": 2,
+    "Fine Dining": 3,
+}
+
 def get_attraction_data(attraction_id):
-    """Point d'intégration unique avec le vrai modèle Attraction."""
     try:
         obj = Attraction.objects.get(pk=attraction_id)
         return {
             "id": obj.id,
             "name": obj.name,
+            "latitude": float(obj.latitude) if obj.latitude is not None else None,
+            "longitude": float(obj.longitude) if obj.longitude is not None else None,
             "city": obj.city,
             "category__name": obj.category.name if obj.category else None,
             "note_tripadvisor": float(obj.note_tripadvisor),
             "nombre_reviews": obj.nombre_reviews,
             "photos": list(obj.photos.values("id", "url")[:1]),
-            "latitude": float(obj.latitude) if obj.latitude is not None else None,
-            "longitude": float(obj.longitude) if obj.longitude is not None else None,
-            "price_level": len(obj.price_level) if obj.price_level else 0,
+            "price_level": PRICE_LEVEL_MAP.get(obj.price_level, 0),
         }
     except Attraction.DoesNotExist:
         return None

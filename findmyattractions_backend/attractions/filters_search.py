@@ -1,5 +1,16 @@
 import math
 
+PRICE_LEVEL_MAP = {
+    "Cheap Eats": 1,
+    "Mid-range": 2,
+    "Fine Dining": 3,
+}
+
+
+def price_level_to_int(price_level):
+    """Convertit le label texte TripAdvisor en niveau numérique 1-3. 0 si inconnu/vide."""
+    return PRICE_LEVEL_MAP.get(price_level, 0)
+
 
 def haversine_km(lat1, lon1, lat2, lon2):
     R = 6371
@@ -8,13 +19,6 @@ def haversine_km(lat1, lon1, lat2, lon2):
     dlambda = math.radians(lon2 - lon1)
     a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
     return 2 * R * math.asin(math.sqrt(a))
-
-
-def price_level_to_int(price_level):
-    """'$' -> 1, '$$' -> 2, '' ou None -> 0"""
-    if not price_level:
-        return 0
-    return len(price_level)
 
 
 def apply_filters(attractions, params):
@@ -39,9 +43,6 @@ def apply_filters(attractions, params):
     min_photos = params.get("min_photos")
     if min_photos:
         results = [a for a in results if a["photo_count"] >= int(min_photos)]
-
-    # NOTE: pas de champ target_profiles dans le modèle actuel.
-    # Le filtre "profile" est ignoré pour l'instant — à ajouter au modèle si besoin.
 
     lat, lon, radius = params.get("lat"), params.get("lon"), params.get("radius")
     if lat and lon and radius:
