@@ -9,14 +9,13 @@ Gère les données Attraction/Catégorie/Photo, ainsi que les pages Accueil, Rec
   - `Attraction` (infos générales, contact, géo, prix, horaires, champs conditionnels selon le type, note/reviews, awards, likes)
   - `Photo` (liée à une Attraction via ForeignKey, stocke une URL)
 - App enregistrée dans `INSTALLED_APPS` (`settings.py`)
-- Migrations générées et appliquées (`0001_initial.py`)
-
-## À faire
-
-- Enregistrer les modèles dans `admin.py` pour pouvoir ajouter des données de test
-- Créer un superuser pour accéder à `/admin/`
-- `serializers.py` (DRF) pour exposer les modèles en API JSON
-- `views.py` + `urls.py` pour les pages Accueil et Page attraction (Dev 2), Recherche (Dev 3)
+- Migrations générées et appliquées (`0001_initial.py`, `0002_remove_attraction_cuisine_remove_attraction_styles.py`)
+- Modèles enregistrés dans `admin.py` (`Category`, `Attraction`, `Photo`) — accessibles sur `/admin/` (superuser à créer localement par chaque dev, cf. commandes ci-dessous)
+- `serializers.py` (DRF) : `CategorySerializer`, `PhotoSerializer`, `AttractionSerializer`
+- `views.py` (page Accueil, page Attraction — Dev 2) :
+  - `attraction_list` : attractions les plus populaires, filtrées par pays du profil utilisateur (`UserProfile.country`), regroupées en sections par catégorie selon le profil (`PROFILE_GROUPS` : Local/Touriste/Professionnel → attraction/restaurant/hotel)
+  - `attraction_detail` : détail d'une attraction + suggestions similaires ("même quartier" : même ville + même catégorie, rayon 3 km, distance haversine via `services/geo.py`, triées par proximité)
+- Import de données réelles depuis TripAdvisor Terra API (`import_attractions`, `import_batch`), voir plus bas
 
 ## Commandes utiles
 
