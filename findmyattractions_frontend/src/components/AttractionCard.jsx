@@ -6,12 +6,14 @@ export default function AttractionCard({ attraction, onRemove, onAdded }) {
     const [added, setAdded] = useState(false);
     const [adding, setAdding] = useState(false);
 
-    async function handleAdd(e) {
-        e.preventDefault();
+    async function handleAdd() {
         setAdding(true);
         try {
             await addToCompilation(attraction.id);
             setAdded(true);
+            // `added` est un state local à cette carte : le parent (ex. la liste "Ma
+            // compilation en cours") n'a aucun moyen de savoir qu'un ajout vient d'avoir
+            // lieu sans ce callback, d'où onAdded pour lui permettre de se rafraîchir.
             onAdded?.();
         } catch (err) {
             console.error(err);
@@ -45,7 +47,7 @@ export default function AttractionCard({ attraction, onRemove, onAdded }) {
             <div className="px-5 pb-5">
                 {onRemove ? (
                     <button
-                        onClick={(e) => { e.preventDefault(); onRemove(); }}
+                        onClick={onRemove}
                         className="mt-4 bg-red-500 text-white px-4 py-2 rounded-xl">
                         ✕ Retirer
                     </button>

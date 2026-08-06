@@ -20,6 +20,11 @@ export default function Home() {
             .finally(() => setLoading(false));
     }, []);
 
+    // Factorisée car appelée à 2 moments qui ont besoin de la même chose (relire la vraie
+    // liste en base) : au montage (React démarre vide, la base peut déjà contenir des items
+    // ajoutés avant), et via onAdded sur AttractionCard (après un ajout depuis le carrousel,
+    // pour rafraîchir la section sans reload).
+    
     function refreshCompilation() {
         getCompilation()
             .then((data) => setCompilationItems(data.items || []));
