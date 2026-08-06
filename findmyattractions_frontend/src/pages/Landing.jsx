@@ -69,9 +69,7 @@ export default function Landing() {
 
     return (
         <div className="relative min-h-screen overflow-hidden flex items-center justify-center px-6 py-16">
-            <div className="absolute inset-0 bg-hero-gradient" />
-            <div className="absolute inset-0 bg-black/20" />
-            <div className="relative z-10 w-full max-w-6xl rounded-[32px] bg-white/90 backdrop-blur-xl shadow-2xl 
+            <div className="relative z-10 w-full max-w-6xl rounded-[32px] bg-white/60 backdrop-blur-xl shadow-2xl 
             border border-white/50 overflow-hidden"
             >
                 <div className="text-center px-10 pt-12">
@@ -79,9 +77,8 @@ export default function Landing() {
                         Préparez votre prochaine aventure
                     </h1>
                     <p className="mt-5 max-w-2xl mx-auto text-lg leading-relaxed text-slate-600">
-                        Découvrez les meilleures attractions,
-                        restaurants et hôtels grâce aux données
-                        TripAdvisor et créez votre itinéraire idéal.
+                        Découvrez les meilleurs attractions, restaurants et hôtels grâce aux données TripAdvisor 
+                        et créez votre itinéraire idéal.
                     </p>
                 </div>
 
@@ -95,6 +92,9 @@ export default function Landing() {
                                 Choisissez votre profil
                             </h2>
                         </div>
+                        <p className="text-slate-600 mb-8">
+                            Les attractions affichées seront adaptées au profil sélectionné.
+                        </p>
 
                         <div className="space-y-3">
                             {profiles.map((profile) => (
@@ -133,8 +133,7 @@ export default function Landing() {
                         </div>
 
                         <p className="text-slate-600 mb-8">
-                            Les attractions affichées seront adaptées
-                            au pays sélectionné.
+                            Les attractions affichées seront adaptées au pays sélectionné.
                         </p>
 
                         <Select

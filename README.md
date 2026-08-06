@@ -8,7 +8,7 @@
 & "C:\Users\Math34\Mathieu\Projets Ipssi\Ipssi_env\Scripts\Activate.ps1"
 cd findmyattractions_backend
 python manage.py migrate
-python manage.py import_batch --limit 10   # à faire une fois, pour peupler la base
+python manage.py import_batch --limit 4   # à faire une fois, pour peupler la base
 python manage.py runserver
 ```
 
