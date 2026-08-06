@@ -56,6 +56,7 @@ def get_attraction_data(attraction_id):
             "category__name": obj.category.name if obj.category else None,
             "note_tripadvisor": float(obj.note_tripadvisor),
             "nombre_reviews": obj.nombre_reviews,
+            "photos": list(obj.photos.values("id", "url")[:1]),
             "latitude": float(obj.latitude) if obj.latitude is not None else None,
             "longitude": float(obj.longitude) if obj.longitude is not None else None,
             "price_level": len(obj.price_level) if obj.price_level else 0,

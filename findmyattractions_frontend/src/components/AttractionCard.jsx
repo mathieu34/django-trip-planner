@@ -21,33 +21,43 @@ export default function AttractionCard({ attraction, onRemove, onAdded }) {
     }
 
     const priceDisplay = attraction.price_level ? attraction.price_level : "—";
+    const photo = attraction.photos?.[0]?.url;
 
     return (
-        <div className="bg-white rounded-wander shadow-card p-5 flex flex-col justify-between">
+        <div className="bg-white rounded-wander shadow-card overflow-hidden flex flex-col justify-between">
             <Link to={`/attraction/${attraction.id}`}>
-                <h3 className="font-display font-bold text-lg mb-1">{attraction.name}</h3>
-                <p className="text-sm text-gray-500 mb-2">
-                    {attraction.category__name} · {attraction.city || "Ville inconnue"}
-                </p>
-                <p className="text-sm mb-2">
-                    ⭐ {attraction.note_tripadvisor} ({attraction.nombre_reviews} avis)
-                </p>
-                <p className="text-sm text-gray-400">{priceDisplay}</p>
+                {photo ? (
+                    <img src={photo} alt={attraction.name} className="w-full h-40 object-cover" />
+                ) : (
+                    <div className="w-full h-40 bg-wanderlust-sand" />
+                )}
+                <div className="p-5">
+                    <h3 className="font-display font-bold text-lg mb-1">{attraction.name}</h3>
+                    <p className="text-sm text-gray-500 mb-2">
+                        {attraction.category__name} · {attraction.city || "Ville inconnue"}
+                    </p>
+                    <p className="text-sm mb-2">
+                        ⭐ {attraction.note_tripadvisor} ({attraction.nombre_reviews} avis)
+                    </p>
+                    <p className="text-sm text-gray-400">{priceDisplay}</p>
+                </div>
             </Link>
-            {onRemove ? (
-                <button
-                    onClick={(e) => { e.preventDefault(); onRemove(); }}
-                    className="mt-4 bg-red-500 text-white px-4 py-2 rounded-xl">
-                    ✕ Retirer
-                </button>
-            ) : (
-                <button
-                    onClick={handleAdd}
-                    disabled={adding || added}
-                    className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-xl disabled:opacity-50">
-                    {added ? "✓ Ajouté" : adding ? "Ajout..." : "+ Compilation"}
-                </button>
-            )}
+            <div className="px-5 pb-5">
+                {onRemove ? (
+                    <button
+                        onClick={(e) => { e.preventDefault(); onRemove(); }}
+                        className="mt-4 bg-red-500 text-white px-4 py-2 rounded-xl">
+                        ✕ Retirer
+                    </button>
+                ) : (
+                    <button
+                        onClick={handleAdd}
+                        disabled={adding || added}
+                        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-xl disabled:opacity-50">
+                        {added ? "✓ Ajouté" : adding ? "Ajout..." : "+ Compilation"}
+                    </button>
+                )}
+            </div>
         </div>
     );
 }
