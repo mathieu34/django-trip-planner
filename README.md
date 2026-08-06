@@ -2,10 +2,16 @@
 
 ## Lancer l'application
 
+**Environnement Python**
+```powershell
+python -m venv django_trip_planner_proj_env
+.\django_trip_planner_proj_env\Scripts\Activate.ps1 # Windows
+pip install -r requirements.txt
+```
+
 ### Backend
 
 ```powershell
-& "C:\Users\Math34\Mathieu\Projets Ipssi\Ipssi_env\Scripts\Activate.ps1"
 cd findmyattractions_backend
 python manage.py migrate
 python manage.py import_batch --limit 4   # à faire une fois, pour peupler la base
