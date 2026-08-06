@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import CompilationItem
-from .mock_data import MOCK_ATTRACTIONS  # à remplacer par un vrai appel plus tard
+from attractions.models import Attraction
 
 
 def haversine_km(lat1, lon1, lat2, lon2):
@@ -46,17 +46,27 @@ def shortest_route(attractions):
 
 
 def get_attraction_data(attraction_id):
-    """
-    Point d'intégration unique avec l'app 'attractions'.
-    Aujourd'hui : mock. Demain : appel réel (import direct ou requête HTTP interne).
-    """
-    return MOCK_ATTRACTIONS.get(attraction_id)
+    """Point d'intégration unique avec le vrai modèle Attraction."""
+    try:
+        obj = Attraction.objects.get(pk=attraction_id)
+        return {
+            "id": obj.id,
+            "name": obj.name,
+            "latitude": float(obj.latitude) if obj.latitude is not None else None,
+            "longitude": float(obj.longitude) if obj.longitude is not None else None,
+            "price_level": len(obj.price_level) if obj.price_level else 0,
+        }
+    except Attraction.DoesNotExist:
+        return None
 
 
 def ensure_session(request):
-    if not request.session.session_key:
-        request.session.create()
-    return request.session.session_key
+    """Token custom envoyé via header X-Compilation-Token (voir api.js côté frontend)."""
+    token = request.headers.get("X-Compilation-Token")
+    if not token:
+        import uuid
+        token = str(uuid.uuid4())
+    return token
 
 
 class CompilationView(APIView):
@@ -73,20 +83,24 @@ class CompilationView(APIView):
                 enriched.append({"item_id": item.id, "attraction": data})
 
         if sort == "budget_asc":
-            enriched.sort(key=lambda e: e["attraction"].get("price_level") or 0)
+            enriched.sort(key=lambda e: e["attraction"]["price_level"] or 0)
         elif sort == "budget_desc":
-            enriched.sort(key=lambda e: e["attraction"].get("price_level") or 0, reverse=True)
+            enriched.sort(key=lambda e: e["attraction"]["price_level"] or 0, reverse=True)
         elif sort == "distance":
-            ordered = shortest_route([e["attraction"] for e in enriched])
+            valid_items = [e for e in enriched if e["attraction"]["latitude"] is not None]
+            ordered = shortest_route([e["attraction"] for e in valid_items])
             order_map = {a["id"]: idx for idx, a in enumerate(ordered)}
-            enriched.sort(key=lambda e: order_map[e["attraction"]["id"]])
+            enriched.sort(key=lambda e: order_map.get(e["attraction"]["id"], 9999))
 
-        total_budget = sum((e["attraction"].get("price_level") or 0) for e in enriched)
+        total_budget = sum((e["attraction"]["price_level"] or 0) for e in enriched)
         total_km = None
         if sort == "distance" and len(enriched) > 1:
-            total_km = round(total_distance([e["attraction"] for e in enriched]), 1)
+            valid = [e["attraction"] for e in enriched if e["attraction"]["latitude"] is not None]
+            if len(valid) > 1:
+                total_km = round(total_distance(valid), 1)
 
         return Response({
+            "token": session_key,
             "items": enriched,
             "total_budget": total_budget,
             "total_distance_km": total_km,
@@ -102,7 +116,10 @@ class CompilationView(APIView):
         item, created = CompilationItem.objects.get_or_create(
             session_key=session_key, attraction_id=attraction_id
         )
-        return Response({"item_id": item.id, "attraction_id": item.attraction_id}, status=status.HTTP_201_CREATED)
+        return Response(
+            {"token": session_key, "item_id": item.id, "attraction_id": item.attraction_id},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class CompilationItemDetailView(APIView):
@@ -111,6 +128,6 @@ class CompilationItemDetailView(APIView):
         try:
             item = CompilationItem.objects.get(pk=pk, session_key=session_key)
             item.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({"token": session_key}, status=status.HTTP_200_OK)
         except CompilationItem.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
