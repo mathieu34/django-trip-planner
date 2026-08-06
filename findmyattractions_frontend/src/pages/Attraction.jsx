@@ -109,16 +109,21 @@ export default function Attraction() {
                         <p>{[attraction.city, attraction.country].filter(Boolean).join(", ")}</p>
                     </div>
 
-                    <div className="p-6 rounded-wander shadow-card">
-                        <h2 className="font-display font-bold text-xl mb-3">Horaires</h2>
-                        {horaires ? (
-                            <ul className="space-y-1">
-                                {horaires.map((line, i) => <li key={i}>{line}</li>)}
-                            </ul>
-                        ) : (
-                            <p className="text-gray-500">Non disponibles</p>
-                        )}
-                    </div>
+                 <div className="p-6 rounded-wander shadow-card">
+    <h2 className="font-display font-bold text-xl mb-3">Horaires</h2>
+
+            {horaires && Array.isArray(horaires) && horaires.length > 0 ? (
+                <ul className="space-y-1">
+                    {horaires.map((line, i) => (
+                        <li key={i}>
+                            {line.day_of_week} : {line.opens} - {line.closes}
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p className="text-gray-500">Non disponibles</p>
+            )}
+                            </div>
 
                 </div>
 
