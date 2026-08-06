@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../api/api";
 import AttractionCard from "../components/AttractionCard";
+import { getCompilation, removeCompilationItem } from "../services/compilationService";
 
 export default function Home() {
 
     const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [compilationItems, setCompilationItems] = useState([]);
 
     // useState + useEffect : le fetch doit partir seul au montage, cf. Attraction.jsx
     useEffect(() => {
@@ -17,9 +20,24 @@ export default function Home() {
             .finally(() => setLoading(false));
     }, []);
 
+    function refreshCompilation() {
+        getCompilation()
+            .then((data) => setCompilationItems(data.items || []));
+    }
+
+    useEffect(() => {
+        refreshCompilation();
+    }, []);
+
+    function handleRemoveFromCompilation(itemId) {
+        removeCompilationItem(itemId)
+            .then(() => setCompilationItems((prev) => prev.filter((item) => item.item_id !== itemId)))
+            .catch((err) => console.error(err));
+    }
+
     return (
 
-        <main className="pt-32 px-10">
+        <main className="pt-32 px-10 pb-20">
 
             <h1 className="text-5xl font-display font-bold">
                 🌍 Destinations populaires
@@ -36,21 +54,30 @@ export default function Home() {
                     <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory pb-4">
                         {section.attractions.map((attraction) => (
                             <div key={attraction.id} className="snap-start shrink-0 w-72">
-                                <AttractionCard attraction={attraction} />
+                                <AttractionCard attraction={attraction} onAdded={refreshCompilation} />
                             </div>
                         ))}
                     </div>
                 </section>
             ))}
 
-            {/*
-                TODO - BLOQUÉ pour l'instant :
-                Section "liste compilée qui se remplit au fur et à mesure" (cahier des charges, page Accueil).
-                Dépend de l'app compilation, actuellement CASSÉE côté back : compilation/views.py importe
-                compilation/mock_data.py qui n'existe pas (ModuleNotFoundError), et la route
-                api/compilation/ n'est même pas incluse dans urls.py racine. À reprendre une fois
-                que Personne 3 aura livré ce fichier + branché la route.
-            */}
+            {compilationItems.length > 0 && (
+                <div className="mt-10">
+                    <h2 className="font-display font-bold text-xl mb-3">Ma compilation en cours</h2>
+                    <div className="grid md:grid-cols-3 gap-5">
+                        {compilationItems.map(({ item_id, attraction }) => (
+                            <AttractionCard
+                                attraction={attraction}
+                                onRemove={() => handleRemoveFromCompilation(item_id)}
+                                key={item_id}
+                            />
+                        ))}
+                    </div>
+                    <Link to="/compilation" className="inline-block mt-6 text-primary font-semibold hover:underline">
+                        Voir ma compilation →
+                    </Link>
+                </div>
+            )}
 
         </main>
 

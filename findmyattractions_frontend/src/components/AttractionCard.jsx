@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { addToCompilation } from "../services/compilationService";
 
-export default function AttractionCard({ attraction }) {
+export default function AttractionCard({ attraction, onRemove, onAdded }) {
     const [added, setAdded] = useState(false);
     const [adding, setAdding] = useState(false);
 
@@ -12,6 +12,7 @@ export default function AttractionCard({ attraction }) {
         try {
             await addToCompilation(attraction.id);
             setAdded(true);
+            onAdded?.();
         } catch (err) {
             console.error(err);
         } finally {
@@ -33,12 +34,20 @@ export default function AttractionCard({ attraction }) {
                 </p>
                 <p className="text-sm text-gray-400">{priceDisplay}</p>
             </Link>
-            <button
-                onClick={handleAdd}
-                disabled={adding || added}
-                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-xl disabled:opacity-50">
-                {added ? "✓ Ajouté" : adding ? "Ajout..." : "+ Compilation"}
-            </button>
+            {onRemove ? (
+                <button
+                    onClick={(e) => { e.preventDefault(); onRemove(); }}
+                    className="mt-4 bg-red-500 text-white px-4 py-2 rounded-xl">
+                    ✕ Retirer
+                </button>
+            ) : (
+                <button
+                    onClick={handleAdd}
+                    disabled={adding || added}
+                    className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-xl disabled:opacity-50">
+                    {added ? "✓ Ajouté" : adding ? "Ajout..." : "+ Compilation"}
+                </button>
+            )}
         </div>
     );
 }
