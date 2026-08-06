@@ -22,7 +22,7 @@ src/
 - `src/components/` : composants réutilisables entre plusieurs pages (ex: `AttractionCard`, `Navbar`)
 - `tailwind.config.js` : thème "Sunset Wanderlust" (couleurs/variables CSS custom)
 - `src/context/` : utilisation de `UserContext` qui permet de partager dans toute l'application le profil utilisateur sélectionné
-- `src/services/` : appels API (ex: `createProfile()`)
+- `src/services/` : appels API backend (ex: `createProfile()`)
 
 ## Lancer le frontend
 

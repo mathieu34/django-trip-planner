@@ -1,6 +1,6 @@
 # Users App
 
-Application Django responsable de la gestion des utilisateurs via une **session Django**. Il n'y a pas de système d'authentification classique.
+Application Django responsable de la gestion des utilisateurs via une session Django. Il n'y a pas de système d'authentification classique.
 
 Chaque utilisateur est identifié par une session.
 
