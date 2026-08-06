@@ -23,15 +23,14 @@ export default function Navbar() {
                 {user && (
                     <div className="flex items-center gap-8 font-medium text-wanderlust-night">
                         <Link className="hover:text-primary transition" to="/home">
-                            Explorer (Accueil)
+                            Accueil
                         </Link>
                         <Link className="hover:text-primary transition" to="/search">
                             Recherche
                         </Link>
                         <Link className="hover:text-primary transition" to="/compilation">
-                            Mon voyage (compilation)
+                            Mon voyage
                         </Link>
-
 
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-wanderlust-sky/20 border border-wanderlust-sky/40">
