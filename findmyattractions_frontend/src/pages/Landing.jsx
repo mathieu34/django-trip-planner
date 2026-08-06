@@ -77,9 +77,8 @@ export default function Landing() {
                         Préparez votre prochaine aventure
                     </h1>
                     <p className="mt-5 max-w-2xl mx-auto text-lg leading-relaxed text-slate-600">
-                        Découvrez les meilleures attractions,
-                        restaurants et hôtels grâce aux données
-                        TripAdvisor et créez votre itinéraire idéal.
+                        Découvrez les meilleures attractions, restaurants et hôtels grâce aux données TripAdvisor 
+                        et créez votre itinéraire idéal.
                     </p>
                 </div>
 
@@ -93,6 +92,9 @@ export default function Landing() {
                                 Choisissez votre profil
                             </h2>
                         </div>
+                        <p className="text-slate-600 mb-8">
+                            Les attractions affichées seront adaptées au profil sélectionné.
+                        </p>
 
                         <div className="space-y-3">
                             {profiles.map((profile) => (
@@ -131,8 +133,7 @@ export default function Landing() {
                         </div>
 
                         <p className="text-slate-600 mb-8">
-                            Les attractions affichées seront adaptées
-                            au pays sélectionné.
+                            Les attractions affichées seront adaptées au pays sélectionné.
                         </p>
 
                         <Select
