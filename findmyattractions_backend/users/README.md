@@ -8,7 +8,7 @@ Chaque utilisateur est identifié par une session.
 ## Responsabilités
 
 - choix du profil utilisateur
-- choix du pays
+- choix du pays (liste des pays du monde configurée dans `data/countries.py`)
 - création de session
 - récupération du profil courant
 - suppression de session
