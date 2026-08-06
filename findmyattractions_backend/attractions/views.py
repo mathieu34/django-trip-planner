@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .serializers import AttractionSerializer
 from .models import Attraction
+from .services.geo import haversine_km
 from users.models import UserProfile
 
 GROUP_LABELS = {
@@ -16,6 +17,11 @@ PROFILE_GROUPS = {
     'Touriste': ['attraction', 'restaurant', 'hotel'],
     'Professionnel': ['hotel', 'restaurant'],
 }
+
+# Rayon (en km) sous lequel une attraction est considérée comme "dans le même quartier"
+SAME_NEIGHBORHOOD_RADIUS_KM = 3
+# Nombre max de suggestions à renvoyer
+MAX_SIMILAR_ATTRACTIONS = 6
 
 
 @api_view(['GET'])
@@ -48,7 +54,41 @@ def attraction_list(request): #django appelle toujours une vue avec l'objet requ
 
 @api_view(['GET'])
 def attraction_detail(request, pk):
-    """Page attraction : détail d'une attraction"""
+    """Page attraction : détail d'une attraction + suggestions du même quartier"""
     attraction = get_object_or_404(Attraction, pk=pk)
     serializer = AttractionSerializer(attraction)
-    return Response({"attraction": serializer.data})
+
+    similar = []
+    if attraction.latitude is not None and attraction.longitude is not None:
+        candidates = Attraction.objects.filter(
+            city=attraction.city,
+            category=attraction.category,
+            latitude__isnull=False,
+            longitude__isnull=False,
+        ).exclude(pk=attraction.pk)
+
+        candidates_with_distance = []
+        for candidate in candidates:
+            distance = haversine_km(
+                attraction.latitude, attraction.longitude,
+                candidate.latitude, candidate.longitude,
+            )
+            candidates_with_distance.append((candidate, distance))
+
+        nearby = []
+        for candidate, distance in candidates_with_distance:
+            if distance <= SAME_NEIGHBORHOOD_RADIUS_KM:
+                nearby.append((candidate, distance))
+
+        nearby.sort(key=lambda pair: pair[1])
+
+        top_candidates = []
+        for candidate, distance in nearby[:MAX_SIMILAR_ATTRACTIONS]:
+            top_candidates.append(candidate)
+
+        similar = AttractionSerializer(top_candidates, many=True).data
+
+    return Response({
+        "attraction": serializer.data,
+        "similar_attractions": similar,
+    })

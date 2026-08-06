@@ -3,11 +3,13 @@ import { useParams } from "react-router-dom";
 import api from "../api/api";
 import { Navigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
+import AttractionCard from "../components/AttractionCard";
 
 export default function Attraction() {
     const { user, userLoading } = useUser();
     const { id } = useParams()
     const [attraction, setAttraction] = useState(null)
+    const [similarAttractions, setSimilarAttractions] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
@@ -17,7 +19,10 @@ export default function Attraction() {
     useEffect(() => {
         setLoading(true)
         api.get(`/attractions/${id}/`)
-            .then((res) => setAttraction(res.data.attraction))
+            .then((res) => {
+                setAttraction(res.data.attraction)
+                setSimilarAttractions(res.data.similar_attractions)
+            })
             .catch((err) => setError(err))
             .finally(() => setLoading(false))
     }, [id]);
@@ -159,6 +164,17 @@ export default function Attraction() {
                                 <li key={i}>🏆 {award.display_name ?? award.name ?? award}</li>
                             ))}
                         </ul>
+                    </div>
+                )}
+
+                {similarAttractions.length > 0 && (
+                    <div className="mt-10">
+                        <h2 className="font-display font-bold text-xl mb-3">Suggestions similaires</h2>
+                        <div className="grid md:grid-cols-3 gap-5">
+                            {similarAttractions.map((item) => (
+                                <AttractionCard attraction={item} key={item.id} />
+                            ))}
+                        </div>
                     </div>
                 )}
 
