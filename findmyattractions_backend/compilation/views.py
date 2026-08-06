@@ -71,12 +71,10 @@ def get_attraction_data(attraction_id):
 
 
 def ensure_session(request):
-    """Token custom envoyé via header X-Compilation-Token (voir api.js côté frontend)."""
-    token = request.headers.get("X-Compilation-Token")
-    if not token:
-        import uuid
-        token = str(uuid.uuid4())
-    return token
+    """Utilise la session Django (cookie sessionid), la même que 'users'."""
+    if not request.session.session_key:
+        request.session.create()
+    return request.session.session_key
 
 
 class CompilationView(APIView):
@@ -110,7 +108,6 @@ class CompilationView(APIView):
                 total_km = round(total_distance(valid), 1)
 
         return Response({
-            "token": session_key,
             "items": enriched,
             "total_budget": total_budget,
             "total_distance_km": total_km,
@@ -127,7 +124,7 @@ class CompilationView(APIView):
             session_key=session_key, attraction_id=attraction_id
         )
         return Response(
-            {"token": session_key, "item_id": item.id, "attraction_id": item.attraction_id},
+            {"item_id": item.id, "attraction_id": item.attraction_id},
             status=status.HTTP_201_CREATED,
         )
 
@@ -138,6 +135,6 @@ class CompilationItemDetailView(APIView):
         try:
             item = CompilationItem.objects.get(pk=pk, session_key=session_key)
             item.delete()
-            return Response({"token": session_key}, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_200_OK)
         except CompilationItem.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
