@@ -36,19 +36,18 @@ export default function SearchFilters({ filters, onChange, onUseLocation }) {
             </div>
 
                   <div>
-                <label className="block text-sm font-medium mb-1">Niveau de prix</label>
-                <select
-                    className="w-full border rounded-lg px-3 py-2"
-                    value={filters.priceLevel}
-                    onChange={(e) => update("priceLevel", e.target.value)}
-                >
-                    <option value="">Tous</option>
-                    <option value="1">$</option>
-                    <option value="2">$$</option>
-                    <option value="3">$$$</option>
-                    <option value="4">$$$$</option>
-                </select>
-            </div>
+    <label className="block text-sm font-medium mb-1">Niveau de prix</label>
+    <select
+        className="w-full border rounded-lg px-3 py-2"
+        value={filters.priceLevel}
+        onChange={(e) => update("priceLevel", e.target.value)}
+    >
+        <option value="">Tous</option>
+        <option value="1">💰 Bon marché</option>
+        <option value="2">💰💰 Prix moyen</option>
+        <option value="3">💰💰💰 Gastronomique</option>
+    </select>
+</div>
 
             <div>
                 <label className="block text-sm font-medium mb-1">Reviews minimum</label>

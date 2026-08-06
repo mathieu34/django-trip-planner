@@ -30,9 +30,10 @@ export default function Attraction() {
     if (loading || userLoading) return <p className="pt-24 text-center">Chargement...</p>;
     if (error || !attraction) return <p className="pt-24 text-center">Attraction introuvable.</p>;
 
-    const horaires = Array.isArray(attraction.horaires?.weekday_text)
-        ? attraction.horaires.weekday_text
-        : null;
+  const horaires = Array.isArray(attraction.horaires)
+    ? attraction.horaires
+    : null;
+
 
     const groupes = Array.isArray(attraction.groupes) ? attraction.groupes : [];
 
@@ -113,22 +114,22 @@ export default function Attraction() {
                         {attraction.address && <p>{attraction.address}</p>}
                         <p>{[attraction.city, attraction.country].filter(Boolean).join(", ")}</p>
                     </div>
+                  
+                <div className="p-6 rounded-wander shadow-card">
+                    <h2 className="font-display font-bold text-xl mb-3">Horaires</h2>
 
-                 <div className="p-6 rounded-wander shadow-card">
-    <h2 className="font-display font-bold text-xl mb-3">Horaires</h2>
-
-            {horaires && Array.isArray(horaires) && horaires.length > 0 ? (
-                <ul className="space-y-1">
-                    {horaires.map((line, i) => (
-                        <li key={i}>
-                            {line.day_of_week} : {line.opens} - {line.closes}
+              {horaires && horaires.length > 0 ? (
+                  <ul className="space-y-1">
+                      {horaires.map((line, i) => (
+                     <li key={i}>
+                        {line.day_of_week} : {line.opens} - {line.closes}
                         </li>
-                    ))}
-                </ul>
-            ) : (
-                <p className="text-gray-500">Non disponibles</p>
-            )}
-                            </div>
+                       ))}
+                      </ul>
+                     ) : (
+                    <p className="text-gray-500">Non disponibles</p>
+                      )}
+              </div>
 
                 </div>
 
