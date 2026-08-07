@@ -47,7 +47,7 @@ def shortest_route(attractions):
 
 PRICE_LEVEL_MAP = {
     "Cheap Eats": 1,
-    "Mid-range": 2,
+    "Mid Range": 2,
     "Fine Dining": 3,
 }
 
