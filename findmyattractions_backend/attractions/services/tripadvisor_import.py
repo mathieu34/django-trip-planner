@@ -4,8 +4,10 @@ import requests
 from django.conf import settings
 
 from attractions.models import Attraction, Category, Photo
+from users.data.countries import COUNTRIES
 
 BASE_URL = "https://terra.tripadvisor.com/api"
+GEONAMES_URL = "http://api.geonames.org/searchJSON"
 
 CATEGORY_MAP = {
     "attractions": ("ATTRACTION", "attraction"),
@@ -14,57 +16,36 @@ CATEGORY_MAP = {
 }
 
 TOP_N = 2
-CANDIDATES_SIZE = 3  # taille max autorisée par l'API pour une page de résultats
-
-# /locations/nearby refuse toute bounding box de plus de 50 km² : impossible de
-# couvrir un pays entier avec cet endpoint. On interroge donc plusieurs petites
-# zones (~30 km² chacune), une par grande ville, et on agrège les résultats —
-# liste volontairement limitée pour la démo, pas exhaustive.
-CITY_CENTERS = {
-    "France": [
-        (48.8566, 2.3522),    # Paris
-        (45.7640, 4.8357),    # Lyon
-        (44.8378, -0.5792),   # Bordeaux
-        (43.2965, 5.3698),    # Marseille
-    ],
-    "Italy": [
-        (41.9028, 12.4964),   # Rome
-        (45.4642, 9.1900),    # Milan
-    ],
-    "Spain": [
-        (40.4168, -3.7038),   # Madrid
-        (41.3874, 2.1686),    # Barcelone
-    ],
-    "United Kingdom": [
-        (51.5074, -0.1278),   # Londres
-        (53.4808, -2.2426),   # Manchester
-    ],
-    "Germany": [
-        (52.5200, 13.4050),   # Berlin
-        (48.1351, 11.5820),   # Munich
-    ],
-    "United States": [
-        (40.7128, -74.0060),  # New York
-        (34.0522, -118.2437),  # Los Angeles
-    ],
-}
-
-# Demi-côté de chaque bounding box en degrés (~5.5 km de côté, ~30 km² < limite API de 50 km²)
-BBOX_DELTA_DEG = 0.025
+CANDIDATES_SIZE = 3  # nombre de résultats demandés par ville et par catégorie
+CITIES_PER_COUNTRY = 3  # nombre de grandes villes récupérées via GeoNames par pays
 
 
 def _headers():
     return {"accept": "application/json", "X-API-Key": settings.TRIPADVISOR_API_KEY}
 
 
-def _bounding_boxes(country_name):
-    centers = CITY_CENTERS.get(country_name)
-    if not centers:
-        return []
-    return [
-        (lat - BBOX_DELTA_DEG, lon - BBOX_DELTA_DEG, lat + BBOX_DELTA_DEG, lon + BBOX_DELTA_DEG)
-        for lat, lon in centers
-    ]
+def _country_code(country_name):
+    for country in COUNTRIES:
+        if country["value"].lower() == country_name.lower():
+            return country["code"]
+    return None
+
+
+def _geonames_cities(country_code, max_cities=CITIES_PER_COUNTRY):
+    """Grandes villes d'un pays (triées par population) via GeoNames — pas de
+    bounding box, juste des noms de villes réutilisables tels quels par
+    /locations/search côté TripAdvisor."""
+    params = {
+        "country": country_code,
+        "featureClass": "P",
+        "orderby": "population",
+        "maxRows": max_cities,
+        "username": settings.GEONAMES_USERNAME,
+    }
+    response = requests.get(GEONAMES_URL, params=params)
+    response.raise_for_status()
+    data = response.json()
+    return [item["name"] for item in data.get("geonames", []) if item.get("name")]
 
 
 def _primary(items):
@@ -76,19 +57,15 @@ def _primary(items):
     return items[0].get("value", "")
 
 
-def _search_nearby(bbox, ta_category, size):
-    sw_lat, sw_lon, ne_lat, ne_lon = bbox
+def _search_by_city(city_name, ta_category, size):
     params = {
-        "sw_lat": sw_lat,
-        "sw_lon": sw_lon,
-        "ne_lat": ne_lat,
-        "ne_lon": ne_lon,
+        "query": city_name,
+        "geo_name": city_name,
         "category": ta_category,
-        "sort": "rating,desc",
-        "size": size,
         "locale": "fr-FR",
+        "size": size,
     }
-    response = requests.get(f"{BASE_URL}/locations/nearby", headers=_headers(), params=params)
+    response = requests.get(f"{BASE_URL}/locations/search", headers=_headers(), params=params)
     response.raise_for_status()
     return response.json().get("data", [])
 
@@ -168,11 +145,11 @@ def import_top_rated(country_name, cli_category="attractions", top_n=TOP_N, clai
     """Importe les `top_n` lieux d'un pays et d'une catégorie, triés par note
     décroissante puis, à note égale, par nombre d'avis décroissant.
 
-    /locations/nearby (sort=rating,desc) fournit le tri primaire par note,
-    interrogé sur plusieurs petites bounding box (une par grande ville du
-    pays, limite API de 50 km² oblige) puis agrégé. Le nombre d'avis n'étant
-    pas un critère de tri disponible côté API, le départage se fait localement
-    sur l'ensemble des candidats trouvés.
+    Les grandes villes du pays sont récupérées via GeoNames (`_geonames_cities`),
+    puis chacune est interrogée sur `/locations/search?query=<ville>` côté
+    TripAdvisor (recherche par nom, pas de bounding box) ; les candidats de
+    toutes les villes sont agrégés avant le tri, aucun des deux critères
+    (note, avis) n'étant proposé nativement par cet endpoint.
 
     `claimed_ids` : IDs TripAdvisor déjà attribués à une autre catégorie lors
     d'un même import multi-catégories. Un même lieu peut être renvoyé par
@@ -183,8 +160,12 @@ def import_top_rated(country_name, cli_category="attractions", top_n=TOP_N, clai
     if claimed_ids is None:
         claimed_ids = set()
 
-    bboxes = _bounding_boxes(country_name)
-    if not bboxes:
+    country_code = _country_code(country_name)
+    if not country_code:
+        return []
+
+    cities = _geonames_cities(country_code)
+    if not cities:
         return []
 
     ta_category, group = CATEGORY_MAP[cli_category]
@@ -192,9 +173,9 @@ def import_top_rated(country_name, cli_category="attractions", top_n=TOP_N, clai
 
     seen_ids = set()
     details = []
-    for bbox in bboxes:
-        nearby_results = _search_nearby(bbox, ta_category, CANDIDATES_SIZE)
-        for item in nearby_results:
+    for city in cities:
+        results = _search_by_city(city, ta_category, CANDIDATES_SIZE)
+        for item in results:
             location_id = (item.get("location") or {}).get("id")
             if not location_id or location_id in seen_ids or location_id in claimed_ids:
                 continue
