@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .data_search import get_all_attractions
 from .filters_search import apply_filters
+from users.models import UserProfile
 
 CATEGORY_LABELS = {
     "attraction": "Attractions incontournables",
@@ -13,6 +14,18 @@ CATEGORY_LABELS = {
 class SearchView(APIView):
     def get(self, request):
         attractions = get_all_attractions()
+        session_key = request.session.session_key
+        if not session_key:
+            return Response({"detail": "Aucune session"})
+        try:
+            profile = UserProfile.objects.get(session_key=session_key)
+        except UserProfile.DoesNotExist:
+            return Response({"detail": "Profil introuvable"})
+        attractions = [
+            attraction
+            for attraction in attractions
+            if attraction["country"].lower() == profile.country.lower()
+        ]
         params = request.query_params
         category = params.get("category")
 

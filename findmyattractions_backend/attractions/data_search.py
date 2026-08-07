@@ -15,6 +15,7 @@ def get_all_attractions():
             "category__name": attraction.category.name if attraction.category else None,
             "category__group": attraction.category.group if attraction.category else None,
             "city": attraction.city,
+            "country": attraction.country,
             "latitude": attraction.latitude,
             "longitude": attraction.longitude,
             "price_level": attraction.price_level,
