@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .mock_data_search import get_all_attractions
+from .data_search import get_all_attractions
 from .filters_search import apply_filters
 
 CATEGORY_LABELS = {
