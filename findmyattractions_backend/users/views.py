@@ -6,6 +6,8 @@ from django.http import JsonResponse
 from .data.countries import COUNTRIES
 from .models import UserProfile, ProfileType
 from .serializers import UserProfileSerializer
+from attractions.models import Attraction
+from attractions.services.tripadvisor_import import import_top_rated_all_categories
 
 # Create your views here.
 
@@ -18,8 +20,16 @@ class CreateUserProfileAPIView(APIView):
             request.session.create()
 
         session_key = request.session.session_key
+        country = serializer.validated_data["country"]
 
         UserProfile.objects.update_or_create(session_key=session_key,defaults=serializer.validated_data)
+
+        # Premier utilisateur à choisir ce pays : rien en base, on va chercher les
+        # données chez TripAdvisor. Si des attractions existent déjà pour ce pays
+        # (déconnexion/reconnexion, ou un autre utilisateur l'a déjà déclenché),
+        # on ne rappelle pas l'API et on réutilise ce qui est persisté en base.
+        if not Attraction.objects.filter(country=country).exists():
+            import_top_rated_all_categories(country)
 
         return Response(serializer.data)
 
